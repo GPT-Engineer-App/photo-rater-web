@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Container, FormControl, FormLabel, Heading, Image, Input, Stack, Textarea, useToast, HStack, IconButton, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Container, FormControl, FormLabel, Heading, Image, Input, Stack, Textarea, useToast, HStack, IconButton, Text, VStack, Spinner } from "@chakra-ui/react";
 import AgeConfirmationModal from "../components/AgeConfirmationModal";
 import { FaStar, FaRegStar, FaRegCommentDots, FaUpload } from "react-icons/fa";
 import LoginSignupModal from "../components/LoginSignupModal";
@@ -9,15 +9,22 @@ const Index = () => {
   const [isOverAge, setIsOverAge] = useState(false);
   const toast = useToast();
   const [photoUrl, setPhotoUrl] = useState("https://images.unsplash.com/photo-1705443066928-737885fbc365?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDcxMzJ8MHwxfHNlYXJjaHwxfHxyYW5kb20lMjBuYXR1cmV8ZW58MHx8fHwxNzExNzIzOTM4fDA&ixlib=rb-4.0.3&q=80&w=1080");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Placeholder for user authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState([]);
 
-  useEffect(() => {}, [photoUrl]);
+  useEffect(() => {
+    if (isLoading) {
+      fetch(`https://source.unsplash.com/random/800x600?sig=${Date.now()}`).then((response) => {
+        setPhotoUrl(response.url);
+        setIsLoading(false);
+      });
+    }
+  }, [isLoading]);
 
   const handleRatePhoto = (selectedRating) => {
     setRating(selectedRating);
@@ -117,10 +124,15 @@ const Index = () => {
 
             <LoginSignupModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onLogin={() => setIsAuthenticated(true)} />
             <Box textAlign="center" mt={6}>
-              <Button colorScheme="purple" onClick={() => setPhotoUrl(`https://source.unsplash.com/random/800x600?sig=${Date.now()}`)}>
-                Show Next
+              <Button colorScheme="purple" onClick={() => setIsLoading(true)} disabled={isLoading}>
+                {isLoading ? "Loading..." : "Show Next"}
               </Button>
             </Box>
+            {isLoading && (
+              <Box display="flex" justifyContent="center" mt={4}>
+                <Spinner size="xl" />
+              </Box>
+            )}
           </Container>
         </>
       )}
