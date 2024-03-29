@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Flex, Text, Button, Menu, MenuButton, MenuList, MenuItem, IconButton } from "@chakra-ui/react";
 import { FaUserCircle } from "react-icons/fa";
 
-const Navbar = ({ isAuthenticated, username, setIsModalOpen }) => {
+const Navbar = ({ user, onLogout, setIsModalOpen }) => {
   return (
     <Flex bg="gray.100" p={4} justifyContent="space-between" alignItems="center">
       <Box>
@@ -11,14 +11,14 @@ const Navbar = ({ isAuthenticated, username, setIsModalOpen }) => {
         </Text>
       </Box>
       <Box>
-        {isAuthenticated ? (
+        {user ? (
           <Menu>
             <MenuButton as={IconButton} icon={<FaUserCircle />} variant="outline" aria-label="Options" />
             <MenuList>
               <MenuItem>Profile</MenuItem>
               <MenuItem>Settings</MenuItem>
               <MenuItem>Uploads</MenuItem>
-              <MenuItem>Logout</MenuItem>
+              <MenuItem onClick={onLogout}>Logout</MenuItem>
             </MenuList>
           </Menu>
         ) : (

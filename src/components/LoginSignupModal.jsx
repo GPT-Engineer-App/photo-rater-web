@@ -1,17 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, FormControl, FormLabel, Input, Button, Stack } from "@chakra-ui/react";
 
-const LoginSignupModal = ({ isOpen, onClose, onLogin }) => {
+const LoginSignupModal = ({ isOpen, onClose, onLogin, onSignup }) => {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
   const handleLogin = (event) => {
     event.preventDefault();
-    onLogin();
-    onClose();
+    onLogin(email, password);
   };
 
   const handleSignup = (event) => {
     event.preventDefault();
-    onLogin();
-    onClose();
+    onSignup(email, password);
   };
 
   return (
@@ -24,11 +25,11 @@ const LoginSignupModal = ({ isOpen, onClose, onLogin }) => {
           <form onSubmit={handleLogin}>
             <FormControl id="email" mb={4}>
               <FormLabel>Email address</FormLabel>
-              <Input type="email" />
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </FormControl>
             <FormControl id="password" mb={6}>
               <FormLabel>Password</FormLabel>
-              <Input type="password" />
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </FormControl>
             <Button type="submit" colorScheme="blue" mb={4}>
               Log In
@@ -37,11 +38,11 @@ const LoginSignupModal = ({ isOpen, onClose, onLogin }) => {
           <form onSubmit={handleSignup}>
             <FormControl id="email" mb={4}>
               <FormLabel>Email address</FormLabel>
-              <Input type="email" />
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </FormControl>
             <FormControl id="password" mb={6}>
               <FormLabel>Password</FormLabel>
-              <Input type="password" />
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </FormControl>
             <Button type="submit" colorScheme="green">
               Sign Up

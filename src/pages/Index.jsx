@@ -4,6 +4,7 @@ import AgeConfirmationModal from "../components/AgeConfirmationModal";
 import { FaStar, FaRegStar, FaRegCommentDots, FaUpload } from "react-icons/fa";
 import LoginSignupModal from "../components/LoginSignupModal";
 import Navbar from "../components/Navbar";
+import { supabase } from "../main";
 
 const Index = () => {
   const [isOverAge, setIsOverAge] = useState(false);
@@ -11,15 +12,78 @@ const Index = () => {
   const [photoUrl, setPhotoUrl] = useState("https://images.unsplash.com/photo-1705443066928-737885fbc365?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDcxMzJ8MHwxfHNlYXJjaHwxfHxyYW5kb20lMjBuYXR1cmV8ZW58MHx8fHwxNzExNzIzOTM4fDA&ixlib=rb-4.0.3&q=80&w=1080");
 
   // Placeholder for user authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState([]);
 
-  useEffect(() => {}, [photoUrl]);
+  useEffect(() => {
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+  }, []);
 
-  const handleRatePhoto = (selectedRating) => {
+  useEffect(() => {
+    const loadData = async () => {
+      let { data: ratings } = await supabase.from("ratings").select("*").eq("photo_url", photoUrl).single();
+
+      if (ratings) {
+        setRating(ratings.rating);
+        setComments(ratings.comments);
+      } else {
+        setRating(0);
+        setComments([]);
+      }
+    };
+    loadData();
+  }, [photoUrl]);
+
+  const isAuthenticated = user !== null;
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+      status: "info",
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
+  const handleLogin = async (email, password) => {
+    const { error } = await supabase.auth.signIn({ email, password });
+    if (error) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleSignup = async (email, password) => {
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      toast({
+        title: "Signup failed",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleRatePhoto = async (selectedRating) => {
+    if (!isAuthenticated) {
+      setIsModalOpen(true);
+      return;
+    }
     setRating(selectedRating);
 
     toast({
@@ -65,7 +129,7 @@ const Index = () => {
       <AgeConfirmationModal isOpen={!isOverAge} onConfirm={() => setIsOverAge(true)} />
       {isOverAge && (
         <>
-          <Navbar isAuthenticated={isAuthenticated} username="User" setIsModalOpen={setIsModalOpen} />
+          <Navbar user={user} onLogout={handleLogout} setIsModalOpen={setIsModalOpen} />
           <Container maxW="container.md" py={10}>
             <Heading mb={6}>Photo Rating Web App</Heading>
             <Box borderWidth="1px" borderRadius="lg" overflow="hidden" mb={6}>
@@ -77,7 +141,7 @@ const Index = () => {
                   <IconButton key={value} icon={rating >= value ? <FaStar /> : <FaRegStar />} onClick={() => handleRatePhoto(value)} variant="unstyled" size="lg" color="yellow.500" />
                 ))}
               </HStack>
-              {isAuthenticated && (
+              {user && (
                 <>
                   <Button leftIcon={<FaRegCommentDots />} colorScheme="teal" onClick={handleComment}>
                     Comment
@@ -115,7 +179,7 @@ const Index = () => {
               </FormControl>
             </form>
 
-            <LoginSignupModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onLogin={() => setIsAuthenticated(true)} />
+            <LoginSignupModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onLogin={handleLogin} onSignup={handleSignup} />
             <Box textAlign="center" mt={6}>
               <Button colorScheme="purple" onClick={() => setPhotoUrl(`https://source.unsplash.com/random/800x600?sig=${Date.now()}`)}>
                 Show Next

@@ -1,35 +1,18 @@
-# photo-rater-web
+# Environment Variables Configuration
 
-A photo rating website/Web app with user accounts. Photos are chosen at random and displayed one at a time to be rated by users. Users can rate photos anonymously, but account creation is required to comment on photos, and to upload and submit photos to be rated. Supabase as a backend DB. Tailwind CSS for styling. Separately afterwards display the schema to import to Supabase to configure the table correctly.
+To securely add the Supabase URL and Supabase Anon (anonymous) Key on deployment, you need to configure environment variables. Here is how you can set them up:
 
-## Collaborate with GPT Engineer
+1. Create a `.env.local` file in the root of your project if it doesn't exist.
 
-This is a [gptengineer.app](https://gptengineer.app)-synced repository 🌟🤖
+2. Add the following lines to your `.env.local` file, replacing `<SUPABASE_URL>` and `<SUPABASE_ANON_KEY>` with your actual Supabase URL and Anon Key values, respectively:
 
-Changes made via gptengineer.app will be committed to this repo.
+   ```
+   VITE_SUPABASE_URL=<SUPABASE_URL>
+   VITE_SUPABASE_ANON_KEY=<SUPABASE_ANON_KEY>
+   ```
 
-If you clone this repo and push changes, you will have them reflected in the GPT Engineer UI.
+3. Your project will now use these environment variables during the build process. Make sure `.env.local` is included in your `.gitignore` file to prevent it from being committed to version control.
 
-## Setup
+Note: The `VITE_` prefix is necessary because Vite (the build tool used in this project) only exposes environment variables to your app if they have the `VITE_` prefix.
 
-```sh
-git clone https://github.com/GPT-Engineer-App/photo-rater-web.git
-cd photo-rater-web
-npm i
-```
-
-```sh
-npm run dev
-```
-
-This will run a dev server with auto reloading and an instant preview.
-
-## Tech stack
-
-- [Vite](https://vitejs.dev/)
-- [React](https://react.dev/)
-- [Chakra UI](https://chakra-ui.com/)
-
-## Requirements
-
-- Node.js & npm - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Remember to replace `<SUPABASE_URL>` and `<SUPABASE_ANON_KEY>` with your actual Supabase credentials.
