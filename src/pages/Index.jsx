@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { Box, Button, Container, FormControl, FormLabel, Heading, Image, Input, Stack, Textarea, useToast } from "@chakra-ui/react";
-import { FaHeart, FaRegCommentDots, FaUpload } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { Box, Button, Container, FormControl, FormLabel, Heading, Image, Input, Stack, Textarea, useToast, HStack, IconButton, Text, VStack } from "@chakra-ui/react";
+import { FaStar, FaRegStar, FaRegCommentDots, FaUpload } from "react-icons/fa";
 
 const Index = () => {
   const toast = useToast();
@@ -9,19 +9,35 @@ const Index = () => {
   // Placeholder for user authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const handleRatePhoto = () => {
-    // Placeholder for rating a photo
+  const [rating, setRating] = useState(0);
+  const [comments, setComments] = useState([]);
+
+  useEffect(() => {
+   
+   
+   
+  }, [photoUrl]);
+
+  const handleRatePhoto = (selectedRating) => {
+    setRating(selectedRating);
+   
+   
     toast({
       title: "Photo rated!",
-      description: "Thank you for your feedback.",
+      description: `You gave this photo ${selectedRating} star(s).`,
       status: "success",
       duration: 3000,
       isClosable: true,
     });
   };
 
-  const handleComment = () => {
-    // Placeholder for commenting on a photo
+  const handleComment = (event) => {
+    event.preventDefault();
+    const commentText = event.target.comment.value;
+   
+   
+    setComments([...comments, commentText]);
+    event.target.reset();
     toast({
       title: "Comment posted!",
       description: "Your comment has been added.",
@@ -49,28 +65,54 @@ const Index = () => {
         <Image src={photoUrl} alt="Random Photo" />
       </Box>
       <Stack spacing={4} direction="row" justify="center" mb={6}>
-        <Button leftIcon={<FaHeart />} colorScheme="pink" onClick={handleRatePhoto}>
-          Like
-        </Button>
+        <HStack spacing={2}>
+          {[1, 2, 3, 4, 5].map((value) => (
+            <IconButton
+              key={value}
+              icon={rating >= value ? <FaStar /> : <FaRegStar />}
+              onClick={() => handleRatePhoto(value)}
+              variant="unstyled"
+              size="lg"
+              color="yellow.500"
+            />
+          ))}
+        </HStack>
         {isAuthenticated && (
-          <Button leftIcon={<FaRegCommentDots />} colorScheme="teal" onClick={handleComment}>
-            Comment
-          </Button>
-        )}
-        {isAuthenticated && (
-          <Button leftIcon={<FaUpload />} colorScheme="blue" onClick={handleUpload}>
-            Upload
-          </Button>
+          <>
+            <Button leftIcon={<FaRegCommentDots />} colorScheme="teal" onClick={handleComment}>
+              Comment
+            </Button>
+            <Button leftIcon={<FaUpload />} colorScheme="blue" onClick={handleUpload}>
+              Upload
+            </Button>
+          </>
         )}
       </Stack>
+      <Box mb={6}>
+        <Heading size="md" mb={4}>Comments</Heading>
+        {comments.length === 0 ? (
+          <Text>No comments yet.</Text>
+        ) : (
+          <VStack spacing={4} align="stretch">
+            {comments.map((comment, index) => (
+              <Box key={index} borderWidth={1} borderRadius="md" p={4}>
+                <Text>{comment}</Text>
+              </Box>
+            ))}
+          </VStack>
+        )}
+      </Box>
+
       {isAuthenticated && (
-        <FormControl id="comment" mb={6}>
-          <FormLabel>Leave a comment</FormLabel>
-          <Textarea placeholder="Write your comment here..." />
-          <Button mt={4} colorScheme="blue" onClick={handleComment}>
-            Post Comment
-          </Button>
-        </FormControl>
+        <form onSubmit={handleComment}>
+          <FormControl id="comment" mb={6}>
+            <FormLabel>Leave a comment</FormLabel>
+            <Textarea name="comment" placeholder="Write your comment here..." />
+            <Button type="submit" mt={4} colorScheme="blue">
+              Post Comment
+            </Button>
+          </FormControl>
+        </form>
       )}
       {!isAuthenticated && (
         <Box textAlign="center">
