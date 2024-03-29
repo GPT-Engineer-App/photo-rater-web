@@ -94,24 +94,23 @@ const Index = () => {
         )}
       </Box>
 
-      <form onSubmit={handleComment}>
-        <FormControl id="comment" mb={6}>
-          <FormLabel>Leave a comment</FormLabel>
-          <Textarea name="comment" placeholder="Write your comment here..." />
-          <Button
-            type="submit"
-            mt={4}
-            colorScheme="blue"
-            onClick={() => {
-              if (!isAuthenticated) {
-                setIsModalOpen(true);
-              }
-            }}
-          >
-            Post Comment
+      {isAuthenticated ? (
+        <form onSubmit={handleComment}>
+          <FormControl id="comment" mb={6}>
+            <FormLabel>Leave a comment</FormLabel>
+            <Textarea name="comment" placeholder="Write your comment here..." />
+            <Button type="submit" mt={4} colorScheme="blue">
+              Post Comment
+            </Button>
+          </FormControl>
+        </form>
+      ) : (
+        <Box textAlign="center" mb={6}>
+          <Button colorScheme="green" onClick={() => setIsModalOpen(true)}>
+            Log In / Sign Up to Post a Comment
           </Button>
-        </FormControl>
-      </form>
+        </Box>
+      )}
 
       {!isAuthenticated && (
         <>
