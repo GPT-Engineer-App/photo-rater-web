@@ -1,18 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, FormControl, FormLabel, Input, Button, Stack } from "@chakra-ui/react";
 
-const LoginSignupModal = ({ isOpen, onClose, onLogin, onSignup }) => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-
+const LoginSignupModal = ({ isOpen, onClose, onLogin }) => {
   const handleLogin = (event) => {
     event.preventDefault();
-    onLogin(email, password);
+    onLogin();
+    onClose();
   };
 
   const handleSignup = (event) => {
     event.preventDefault();
-    onSignup(email, password);
+    onLogin();
+    onClose();
   };
 
   return (
@@ -25,11 +24,11 @@ const LoginSignupModal = ({ isOpen, onClose, onLogin, onSignup }) => {
           <form onSubmit={handleLogin}>
             <FormControl id="email" mb={4}>
               <FormLabel>Email address</FormLabel>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input type="email" />
             </FormControl>
             <FormControl id="password" mb={6}>
               <FormLabel>Password</FormLabel>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Input type="password" />
             </FormControl>
             <Button type="submit" colorScheme="blue" mb={4}>
               Log In
@@ -38,11 +37,11 @@ const LoginSignupModal = ({ isOpen, onClose, onLogin, onSignup }) => {
           <form onSubmit={handleSignup}>
             <FormControl id="email" mb={4}>
               <FormLabel>Email address</FormLabel>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input type="email" />
             </FormControl>
             <FormControl id="password" mb={6}>
               <FormLabel>Password</FormLabel>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Input type="password" />
             </FormControl>
             <Button type="submit" colorScheme="green">
               Sign Up
