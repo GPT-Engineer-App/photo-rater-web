@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, Container, FormControl, FormLabel, Heading, Image, Input, Stack, Textarea, useToast, HStack, IconButton, Text, VStack } from "@chakra-ui/react";
+import AgeConfirmationModal from "../components/AgeConfirmationModal";
 import { FaStar, FaRegStar, FaRegCommentDots, FaUpload } from "react-icons/fa";
 import LoginSignupModal from "../components/LoginSignupModal";
 import Navbar from "../components/Navbar";
 
 const Index = () => {
+  const [isOverAge, setIsOverAge] = useState(false);
   const toast = useToast();
   const [photoUrl, setPhotoUrl] = useState("https://images.unsplash.com/photo-1705443066928-737885fbc365?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDcxMzJ8MHwxfHNlYXJjaHwxfHxyYW5kb20lMjBuYXR1cmV8ZW58MHx8fHwxNzExNzIzOTM4fDA&ixlib=rb-4.0.3&q=80&w=1080");
 
@@ -60,63 +62,68 @@ const Index = () => {
 
   return (
     <>
-      <Navbar isAuthenticated={isAuthenticated} username="User" setIsModalOpen={setIsModalOpen} />
-      <Container maxW="container.md" py={10}>
-        <Heading mb={6}>Photo Rating Web App</Heading>
-        <Box borderWidth="1px" borderRadius="lg" overflow="hidden" mb={6}>
-          <Image src={photoUrl} alt="Random Photo" />
-        </Box>
-        <Stack spacing={4} direction="row" justify="center" mb={6}>
-          <HStack spacing={2}>
-            {[1, 2, 3, 4, 5].map((value) => (
-              <IconButton key={value} icon={rating >= value ? <FaStar /> : <FaRegStar />} onClick={() => handleRatePhoto(value)} variant="unstyled" size="lg" color="yellow.500" />
-            ))}
-          </HStack>
-          {isAuthenticated && (
-            <>
-              <Button leftIcon={<FaRegCommentDots />} colorScheme="teal" onClick={handleComment}>
-                Comment
-              </Button>
-              <Button leftIcon={<FaUpload />} colorScheme="blue" onClick={handleUpload}>
-                Upload
-              </Button>
-            </>
-          )}
-        </Stack>
-        <Box mb={6}>
-          <Heading size="md" mb={4}>
-            Comments
-          </Heading>
-          {comments.length === 0 ? (
-            <Text>No comments yet.</Text>
-          ) : (
-            <VStack spacing={4} align="stretch">
-              {comments.map((comment, index) => (
-                <Box key={index} borderWidth={1} borderRadius="md" p={4}>
-                  <Text>{comment}</Text>
-                </Box>
-              ))}
-            </VStack>
-          )}
-        </Box>
+      <AgeConfirmationModal isOpen={!isOverAge} onConfirm={() => setIsOverAge(true)} />
+      {isOverAge && (
+        <>
+          <Navbar isAuthenticated={isAuthenticated} username="User" setIsModalOpen={setIsModalOpen} />
+          <Container maxW="container.md" py={10}>
+            <Heading mb={6}>Photo Rating Web App</Heading>
+            <Box borderWidth="1px" borderRadius="lg" overflow="hidden" mb={6}>
+              <Image src={photoUrl} alt="Random Photo" />
+            </Box>
+            <Stack spacing={4} direction="row" justify="center" mb={6}>
+              <HStack spacing={2}>
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <IconButton key={value} icon={rating >= value ? <FaStar /> : <FaRegStar />} onClick={() => handleRatePhoto(value)} variant="unstyled" size="lg" color="yellow.500" />
+                ))}
+              </HStack>
+              {isAuthenticated && (
+                <>
+                  <Button leftIcon={<FaRegCommentDots />} colorScheme="teal" onClick={handleComment}>
+                    Comment
+                  </Button>
+                  <Button leftIcon={<FaUpload />} colorScheme="blue" onClick={handleUpload}>
+                    Upload
+                  </Button>
+                </>
+              )}
+            </Stack>
+            <Box mb={6}>
+              <Heading size="md" mb={4}>
+                Comments
+              </Heading>
+              {comments.length === 0 ? (
+                <Text>No comments yet.</Text>
+              ) : (
+                <VStack spacing={4} align="stretch">
+                  {comments.map((comment, index) => (
+                    <Box key={index} borderWidth={1} borderRadius="md" p={4}>
+                      <Text>{comment}</Text>
+                    </Box>
+                  ))}
+                </VStack>
+              )}
+            </Box>
 
-        <form onSubmit={handleComment}>
-          <FormControl id="comment" mb={6}>
-            <FormLabel>Leave a comment</FormLabel>
-            <Textarea name="comment" placeholder="Write your comment here..." />
-            <Button type="submit" mt={4} colorScheme="blue">
-              Post Comment
-            </Button>
-          </FormControl>
-        </form>
+            <form onSubmit={handleComment}>
+              <FormControl id="comment" mb={6}>
+                <FormLabel>Leave a comment</FormLabel>
+                <Textarea name="comment" placeholder="Write your comment here..." />
+                <Button type="submit" mt={4} colorScheme="blue">
+                  Post Comment
+                </Button>
+              </FormControl>
+            </form>
 
-        <LoginSignupModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onLogin={() => setIsAuthenticated(true)} />
-        <Box textAlign="center" mt={6}>
-          <Button colorScheme="purple" onClick={() => setPhotoUrl(`https://source.unsplash.com/random/800x600?sig=${Date.now()}`)}>
-            Show Next
-          </Button>
-        </Box>
-      </Container>
+            <LoginSignupModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onLogin={() => setIsAuthenticated(true)} />
+            <Box textAlign="center" mt={6}>
+              <Button colorScheme="purple" onClick={() => setPhotoUrl(`https://source.unsplash.com/random/800x600?sig=${Date.now()}`)}>
+                Show Next
+              </Button>
+            </Box>
+          </Container>
+        </>
+      )}
     </>
   );
 };
