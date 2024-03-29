@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, Container, FormControl, FormLabel, Heading, Image, Input, Stack, Textarea, useToast, HStack, IconButton, Text, VStack } from "@chakra-ui/react";
 import { FaStar, FaRegStar, FaRegCommentDots, FaUpload } from "react-icons/fa";
+import LoginSignupModal from "../components/LoginSignupModal";
 
 const Index = () => {
   const toast = useToast();
-  const [photoUrl, setPhotoUrl] = useState('https://images.unsplash.com/photo-1705443066928-737885fbc365?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDcxMzJ8MHwxfHNlYXJjaHwxfHxyYW5kb20lMjBuYXR1cmV8ZW58MHx8fHwxNzExNzIzOTM4fDA&ixlib=rb-4.0.3&q=80&w=1080');
+  const [photoUrl, setPhotoUrl] = useState("https://images.unsplash.com/photo-1705443066928-737885fbc365?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDcxMzJ8MHwxfHNlYXJjaHwxfHxyYW5kb20lMjBuYXR1cmV8ZW58MHx8fHwxNzExNzIzOTM4fDA&ixlib=rb-4.0.3&q=80&w=1080");
 
   // Placeholder for user authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState([]);
 
-  useEffect(() => {
-   
-   
-   
-  }, [photoUrl]);
+  useEffect(() => {}, [photoUrl]);
 
   const handleRatePhoto = (selectedRating) => {
     setRating(selectedRating);
-   
-   
+
     toast({
       title: "Photo rated!",
       description: `You gave this photo ${selectedRating} star(s).`,
@@ -34,8 +31,7 @@ const Index = () => {
   const handleComment = (event) => {
     event.preventDefault();
     const commentText = event.target.comment.value;
-   
-   
+
     setComments([...comments, commentText]);
     event.target.reset();
     toast({
@@ -67,14 +63,7 @@ const Index = () => {
       <Stack spacing={4} direction="row" justify="center" mb={6}>
         <HStack spacing={2}>
           {[1, 2, 3, 4, 5].map((value) => (
-            <IconButton
-              key={value}
-              icon={rating >= value ? <FaStar /> : <FaRegStar />}
-              onClick={() => handleRatePhoto(value)}
-              variant="unstyled"
-              size="lg"
-              color="yellow.500"
-            />
+            <IconButton key={value} icon={rating >= value ? <FaStar /> : <FaRegStar />} onClick={() => handleRatePhoto(value)} variant="unstyled" size="lg" color="yellow.500" />
           ))}
         </HStack>
         {isAuthenticated && (
@@ -89,7 +78,9 @@ const Index = () => {
         )}
       </Stack>
       <Box mb={6}>
-        <Heading size="md" mb={4}>Comments</Heading>
+        <Heading size="md" mb={4}>
+          Comments
+        </Heading>
         {comments.length === 0 ? (
           <Text>No comments yet.</Text>
         ) : (
@@ -103,24 +94,40 @@ const Index = () => {
         )}
       </Box>
 
-      {isAuthenticated && (
-        <form onSubmit={handleComment}>
-          <FormControl id="comment" mb={6}>
-            <FormLabel>Leave a comment</FormLabel>
-            <Textarea name="comment" placeholder="Write your comment here..." />
-            <Button type="submit" mt={4} colorScheme="blue">
-              Post Comment
-            </Button>
-          </FormControl>
-        </form>
-      )}
-      {!isAuthenticated && (
-        <Box textAlign="center">
-          <Button colorScheme="green" onClick={() => setIsAuthenticated(true)}>
-            Log In / Sign Up
+      <form onSubmit={handleComment}>
+        <FormControl id="comment" mb={6}>
+          <FormLabel>Leave a comment</FormLabel>
+          <Textarea name="comment" placeholder="Write your comment here..." />
+          <Button
+            type="submit"
+            mt={4}
+            colorScheme="blue"
+            onClick={() => {
+              if (!isAuthenticated) {
+                setIsModalOpen(true);
+              }
+            }}
+          >
+            Post Comment
           </Button>
-        </Box>
+        </FormControl>
+      </form>
+
+      {!isAuthenticated && (
+        <>
+          <Box textAlign="center">
+            <Button colorScheme="green" onClick={() => setIsModalOpen(true)}>
+              Log In / Sign Up
+            </Button>
+          </Box>
+          <LoginSignupModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onLogin={() => setIsAuthenticated(true)} />
+        </>
       )}
+      <Box textAlign="center" mt={6}>
+        <Button colorScheme="purple" onClick={() => setPhotoUrl(`https://source.unsplash.com/random/800x600?sig=${Date.now()}`)}>
+          Show Next
+        </Button>
+      </Box>
     </Container>
   );
 };
