@@ -4,23 +4,86 @@ import AgeConfirmationModal from "../components/AgeConfirmationModal";
 import { FaStar, FaRegStar, FaRegCommentDots, FaUpload } from "react-icons/fa";
 import LoginSignupModal from "../components/LoginSignupModal";
 import Navbar from "../components/Navbar";
+// Assuming "@supabase/supabase-js" is correctly installed and the issue is with the build process
+
+const createClient = window.Supabase.createClient;
+
+const supabase = createClient(process.env.REACT_APP_SUPABASE_URL, process.env.REACT_APP_SUPABASE_API_KEY);
 
 const Index = () => {
   const [isOverAge, setIsOverAge] = useState(false);
   const toast = useToast();
   const [photoUrl, setPhotoUrl] = useState("https://images.unsplash.com/photo-1705443066928-737885fbc365?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDcxMzJ8MHwxfHNlYXJjaHwxfHxyYW5kb20lMjBuYXR1cmV8ZW58MHx8fHwxNzExNzIzOTM4fDA&ixlib=rb-4.0.3&q=80&w=1080");
 
-  // Placeholder for user authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+  const isAuthenticated = user !== null;
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => {
+      authListener.unsubscribe();
+    };
+  }, []);
+
+  const handleLogin = async (email, password) => {
+    const { error } = await supabase.auth.signIn({ email, password });
+    const currentUser = supabase.auth.user();
+    if (!error && currentUser) {
+      setUser(currentUser);
+    }
+    if (error) {
+      toast({
+        title: "Error logging in",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleSignup = async (email, password) => {
+    const { error } = await supabase.auth.signUp({ email, password });
+    const currentUser = supabase.auth.user();
+    if (!error && currentUser) {
+      setUser(currentUser);
+    }
+    if (error) {
+      toast({
+        title: "Error signing up",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      setUser(null);
+    }
+  };
 
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState([]);
 
   useEffect(() => {}, [photoUrl]);
 
-  const handleRatePhoto = (selectedRating) => {
+  const handleRatePhoto = async (selectedRating) => {
+    if (!isAuthenticated) {
+      setIsModalOpen(true);
+      return;
+    }
     setRating(selectedRating);
+    const { data, error } = await supabase.from("ratings").upsert({ photo_id: photoUrl, user_id: user.id, rating: selectedRating });
 
     toast({
       title: "Photo rated!",
@@ -31,14 +94,26 @@ const Index = () => {
     });
   };
 
-  const handleComment = (event) => {
+  const handleComment = async (event) => {
     event.preventDefault();
     if (!isAuthenticated) {
       setIsModalOpen(true);
       return;
     }
     const commentText = event.target.elements.comment.value;
-    setComments([...comments, commentText]);
+    const { data, error } = await supabase.from("comments").insert({ photo_id: photoUrl, user_id: user.id, content: commentText });
+
+    if (error) {
+      toast({
+        title: "Error posting comment",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } else {
+      setComments([...comments, data[0]]);
+    }
     event.target.reset();
     toast({
       title: "Comment posted!",
@@ -60,12 +135,31 @@ const Index = () => {
     });
   };
 
+  useEffect(() => {
+    const fetchRating = async () => {
+      const { data, error } = await supabase.from("ratings").select("rating").eq("photo_id", photoUrl).eq("user_id", user?.id).single();
+
+      if (data) setRating(data.rating);
+    };
+
+    const fetchComments = async () => {
+      const { data, error } = await supabase.from("comments").select("*").eq("photo_id", photoUrl).order("created_at", { ascending: true });
+
+      if (data) setComments(data);
+    };
+
+    if (isAuthenticated) {
+      fetchRating();
+      fetchComments();
+    }
+  }, [user, photoUrl]);
+
   return (
     <>
       <AgeConfirmationModal isOpen={!isOverAge} onConfirm={() => setIsOverAge(true)} />
       {isOverAge && (
         <>
-          <Navbar isAuthenticated={isAuthenticated} username="User" setIsModalOpen={setIsModalOpen} />
+          <Navbar user={user} isAuthenticated={isAuthenticated} onLogin={handleLogin} onSignup={handleSignup} onLogout={handleLogout} setIsModalOpen={setIsModalOpen} />
           <Container maxW="container.md" py={10}>
             <Heading mb={6}>Photo Rating Web App</Heading>
             <Box borderWidth="1px" borderRadius="lg" overflow="hidden" mb={6}>
@@ -77,7 +171,7 @@ const Index = () => {
                   <IconButton key={value} icon={rating >= value ? <FaStar /> : <FaRegStar />} onClick={() => handleRatePhoto(value)} variant="unstyled" size="lg" color="yellow.500" />
                 ))}
               </HStack>
-              {isAuthenticated && (
+              {user && (
                 <>
                   <Button leftIcon={<FaRegCommentDots />} colorScheme="teal" onClick={handleComment}>
                     Comment
@@ -96,9 +190,12 @@ const Index = () => {
                 <Text>No comments yet.</Text>
               ) : (
                 <VStack spacing={4} align="stretch">
-                  {comments.map((comment, index) => (
-                    <Box key={index} borderWidth={1} borderRadius="md" p={4}>
-                      <Text>{comment}</Text>
+                  {comments.map((comment) => (
+                    <Box key={comment.id} borderWidth={1} borderRadius="md" p={4}>
+                      <Text>{comment.content}</Text>
+                      <Text fontSize="sm" color="gray.500">
+                        By {comment.user_id}
+                      </Text>
                     </Box>
                   ))}
                 </VStack>
@@ -115,7 +212,7 @@ const Index = () => {
               </FormControl>
             </form>
 
-            <LoginSignupModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onLogin={() => setIsAuthenticated(true)} />
+            <LoginSignupModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onLogin={handleLogin} onSignup={handleSignup} />
             <Box textAlign="center" mt={6}>
               <Button colorScheme="purple" onClick={() => setPhotoUrl(`https://source.unsplash.com/random/800x600?sig=${Date.now()}`)}>
                 Show Next

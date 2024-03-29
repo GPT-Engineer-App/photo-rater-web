@@ -1,16 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, FormControl, FormLabel, Input, Button, Stack } from "@chakra-ui/react";
 
-const LoginSignupModal = ({ isOpen, onClose, onLogin }) => {
-  const handleLogin = (event) => {
+const LoginSignupModal = ({ isOpen, onClose, onLogin, onSignup }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async (event) => {
     event.preventDefault();
-    onLogin();
+    await onLogin(email, password);
     onClose();
   };
 
-  const handleSignup = (event) => {
+  const handleSignup = async (event) => {
     event.preventDefault();
-    onLogin();
+    await onSignup(email, password);
     onClose();
   };
 
@@ -22,26 +25,26 @@ const LoginSignupModal = ({ isOpen, onClose, onLogin }) => {
         <ModalCloseButton />
         <ModalBody>
           <form onSubmit={handleLogin}>
-            <FormControl id="email" mb={4}>
+            <FormControl id="login-email" mb={4}>
               <FormLabel>Email address</FormLabel>
-              <Input type="email" />
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </FormControl>
-            <FormControl id="password" mb={6}>
+            <FormControl id="login-password" mb={6}>
               <FormLabel>Password</FormLabel>
-              <Input type="password" />
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </FormControl>
             <Button type="submit" colorScheme="blue" mb={4}>
               Log In
             </Button>
           </form>
           <form onSubmit={handleSignup}>
-            <FormControl id="email" mb={4}>
+            <FormControl id="signup-email" mb={4}>
               <FormLabel>Email address</FormLabel>
-              <Input type="email" />
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </FormControl>
-            <FormControl id="password" mb={6}>
+            <FormControl id="signup-password" mb={6}>
               <FormLabel>Password</FormLabel>
-              <Input type="password" />
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </FormControl>
             <Button type="submit" colorScheme="green">
               Sign Up
